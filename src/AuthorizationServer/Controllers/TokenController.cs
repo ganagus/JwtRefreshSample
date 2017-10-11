@@ -62,12 +62,12 @@ namespace AuthorizationServer.Controllers
         private async Task<ResponseData> DoPasswordAsync(Parameters parameters)
         {
             //validate the client_id/client_secret/username/password                                          
-            var isValidated = UserInfo.GetAllUsers().Any(x => x.ClientId == parameters.client_id
+            var user = UserInfo.GetAllUsers().SingleOrDefault(x => x.ClientId == parameters.client_id
                                     && x.ClientSecret == parameters.client_secret
                                     && x.UserName == parameters.username
                                     && x.Password == parameters.password);
 
-            if (!isValidated)
+            if (user == null)
             {
                 return new ResponseData
                 {
@@ -84,7 +84,8 @@ namespace AuthorizationServer.Controllers
                 ClientId = parameters.client_id,
                 Token = refresh_token,
                 Id = Guid.NewGuid().ToString(),
-                IsStop = 0
+                IsStop = 0,
+                UserName = user.UserName
             };
 
             //store the refresh_token 
@@ -94,7 +95,7 @@ namespace AuthorizationServer.Controllers
                 {
                     Code = "999",
                     Message = "Ok",
-                    Data = GetJwt(parameters.client_id, refresh_token, _settings.Value.ExpireMinutes)
+                    Data = GetJwt(parameters.client_id, user.UserName, refresh_token, _settings.Value.ExpireMinutes)
                 };
             }
             else
@@ -145,7 +146,8 @@ namespace AuthorizationServer.Controllers
                 ClientId = parameters.client_id,
                 Token = refresh_token,
                 Id = Guid.NewGuid().ToString(),
-                IsStop = 0
+                IsStop = 0,
+                UserName = token.UserName
             });
 
             if (updateFlag && addFlag)
@@ -154,7 +156,7 @@ namespace AuthorizationServer.Controllers
                 {
                     Code = "999",
                     Message = "Ok",
-                    Data = GetJwt(parameters.client_id, refresh_token, _settings.Value.ExpireMinutes)
+                    Data = GetJwt(parameters.client_id, token.UserName, refresh_token, _settings.Value.ExpireMinutes)
                 };
             }
             else
@@ -168,7 +170,7 @@ namespace AuthorizationServer.Controllers
             }
         }
 
-        private string GetJwt(string clientId, string refreshToken, int expireMinutes)
+        private string GetJwt(string clientId, string userName, string refreshToken, int expireMinutes)
         {
             var now = DateTime.UtcNow;
 
@@ -176,7 +178,8 @@ namespace AuthorizationServer.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, clientId),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, now.ToUniversalTime().ToString(), ClaimValueTypes.Integer64)
+                new Claim(JwtRegisteredClaimNames.Iat, now.ToUniversalTime().ToString(), ClaimValueTypes.Integer64),
+                new Claim("Name", userName)
             };
 
             var symmetricKeyAsBase64 = _settings.Value.Secret;

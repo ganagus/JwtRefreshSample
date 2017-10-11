@@ -62,6 +62,13 @@ namespace ApiTest
             Console.WriteLine(rsMsg.StatusCode);
             Console.WriteLine(await rsMsg.Content.ReadAsStringAsync());
 
+            // Display username
+            Console.WriteLine("Begin to request the resouce server to get the username..");
+            rsUrl = $"http://{host}:5002/api/values/username";
+            rsMsg = await _client.GetAsync(rsUrl);
+            Console.Write("Username: ");
+            Console.WriteLine(await rsMsg.Content.ReadAsStringAsync());
+
             // Make token expired
             Console.WriteLine("Sleep 2 minutes to make the token expire");
             System.Threading.Thread.Sleep(TimeSpan.FromMinutes(2));

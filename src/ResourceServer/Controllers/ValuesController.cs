@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ResourceServer.Controllers
 {
@@ -20,6 +21,12 @@ namespace ResourceServer.Controllers
         public string Get(int id)
         {
             return "value";
+        }
+
+        [HttpGet("username")]
+        public string GetUserName()
+        {
+            return User.Claims.Where(c => c.Type == "Name").Select(c => c.Value).SingleOrDefault();
         }
 
         // POST api/values

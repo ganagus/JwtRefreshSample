@@ -18,5 +18,8 @@ namespace AuthorizationServer.Models
 
         [Column("is_stop")]
         public int IsStop { get; set; }
+
+        [Column("username")]
+        public string UserName { get; set; }
     }
 }
